@@ -24,10 +24,10 @@ def run_price_task(fetcher: PriceFetcher, sleep_sec=1):
         ts, price = fetcher.update()
         with lock:
             latest_price = (ts, price)
-        print(f"[価格] {ts}  {price:.3f}")
+        # print(f"[価格] {ts}  {price:.3f}")
         time.sleep(sleep_sec)
 
-# === タスク2: 移動平均計算（分が切り替わったらだけ更新） ===
+# === タスク2:インジケータ（分が切り替わったらだけ更新） ===
 def run_ma_task(mas: dict[int, MovingAverage], poll_sec=0.1):
     global latest_price, latest_ma_snap
     last_min = None
@@ -48,7 +48,7 @@ def run_ma_task(mas: dict[int, MovingAverage], poll_sec=0.1):
             for w in sorted(mas.keys()):
                 v = ma_vals[w]
                 parts.append(f"MA({w})={v:.3f}" if v is not None else f"MA({w})=nan")
-            print(f"[移動平均] {ts}  " + "  ".join(parts))
+            # print(f"[移動平均] {ts}  " + "  ".join(parts))
             last_min = cur_min
         time.sleep(poll_sec)
 
@@ -72,11 +72,31 @@ def run_strategy_task(strategy: Strategy, sleep_sec=1):
             latest_signal = res
 
         def fmt(x): return f"{x:.3f}" if x is not None else "nan"
-        print(
-            f"[シグナル] {ts_px}  価格={price:.3f}  "
-            f"MA25={fmt(ma_dict.get(25))}  MA75={fmt(ma_dict.get(75))}  MA200={fmt(ma_dict.get(200))}  "
-            f"→ Signal={res['signal']}"
-        )
+        # print(
+        #     f"[シグナル] {ts_px}  価格={price:.3f}  "
+        #     f"MA25={fmt(ma_dict.get(25))}  MA75={fmt(ma_dict.get(75))}  MA200={fmt(ma_dict.get(200))}  "
+        #     f"→ Signal={res['signal']}"
+        # )
+        time.sleep(sleep_sec)
+        
+# === タスク4: 表示タスク ===
+def run_view_task(sleep_sec=3):
+    global latest_price, latest_ma_snap, latest_signal
+    while True:
+        with lock:
+            px = latest_price
+            ma_snap = latest_ma_snap
+        if not px or not ma_snap:
+            time.sleep(0.1); continue
+        
+        ts_px, price = px
+        ts_ma, _, ma_dict = ma_snap  # ma_snap = (ts, price, {w:ma})
+        date_part = ts_px.strftime("%Y-%m-%d")
+        time_part = ts_px.strftime("%H:%M:%S")
+        print("-----------------------------------------------------------")
+        print("date:",date_part,"time:",time_part)
+        print("now price:",price)
+        print("price ma 25:",ma_dict.get(25)," 75:",ma_dict.get(75)," 200:",ma_dict.get(200))
         time.sleep(sleep_sec)
 
 def main():
@@ -96,10 +116,12 @@ def main():
     t1 = threading.Thread(target=run_price_task,   args=(fetcher,), daemon=True)
     t2 = threading.Thread(target=run_ma_task,      args=(mas,),     daemon=True)
     t3 = threading.Thread(target=run_strategy_task,args=(strategy,),daemon=True)
+    t4 = threading.Thread(target=run_view_task, daemon=True)
 
     t1.start()
     t2.start()
     t3.start()
+    t4.start()
 
     try:
         while True:
