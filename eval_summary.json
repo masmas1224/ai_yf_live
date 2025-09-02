@@ -1,0 +1,13 @@
+{
+  "trades": 10,
+  "win_rate_overall": 0.0,
+  "win_rate_buy": 0.0,
+  "win_rate_sell": 0.0,
+  "avg_return_per_trade": -0.000322,
+  "std_return": 0.000165,
+  "sharpe_like": -15.121,
+  "cumulative_return": -0.003217,
+  "horizon_min": 5,
+  "buy_threshold": 0.58,
+  "round_trip_cost_pips": 0.6
+}
