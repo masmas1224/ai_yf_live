@@ -138,14 +138,14 @@ def run_view_task(sleep_sec=1):
         print("-----------------------------------------------------------")
         print("date:",date_part,"time:",time_part)
         print("now price   :",nowprice)
-        
+
         print("ma 25       :",ma25)
         print("ma 75       :",ma75)
         print("ma 200      :",ma200)
 
         print("bb +2σ      :",bb_upper_2)
         print("bb +1σ      :",bb_upper_1)
-        print("bb σ        :",mid)
+        print("bb mid      :",mid)
         print("bb -1σ      :",bb_lower_1)
         print("bb -2σ      :",bb_lower_2)
 
