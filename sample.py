@@ -18,12 +18,20 @@ print("Saved: USDJPY_1m_7d.csv  rows=", len(df))
 import time, yfinance as yf
 
 pair = "USDJPY=X"
+priceOld = ""
+
 while True:
     df = yf.Ticker(pair).history(period="1d", interval="1m", auto_adjust=False)
     last = df.tail(1)  # 直近1本
     ts = last.index[-1].tz_convert("Asia/Tokyo")
     close = float(last["Close"].iloc[-1])
-    print(ts, close)
+    if priceOld == close:
+        print(ts, close)
+    else:
+        print(ts, close,"←←←←←←←←edge!!!")
+
+    priceOld = close
+
     time.sleep(1)
 
 
