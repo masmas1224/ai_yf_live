@@ -4,14 +4,16 @@ from datetime import datetime
 from fetcher import PriceFetcher
 from average import MovingAverage
 from strategy import Strategy
+from decimal import Decimal, ROUND_DOWN
 
 # === 設定 ===
 WINDOWS = [25, 75, 200]
 PAIR = "USDJPY=X"
 INTERVAL = "1m"
 HISTORY_PERIOD = "7d"
+DEBUG = False # パフォーマンステスト用
 
-# === 共有スナップショット ===
+# === 共有 ===
 latest_price = None          # (ts, price)
 latest_ma_snap = None        # (ts, price, {w: ma})
 latest_signal = None         # dict
@@ -21,17 +23,28 @@ lock = threading.Lock()
 def run_price_task(fetcher: PriceFetcher, sleep_sec=1):
     global latest_price
     while True:
+        if DEBUG:
+            start = time.perf_counter()   # ← 計測開始
+
         ts, price = fetcher.update()
         with lock:
             latest_price = (ts, price)
         # print(f"[価格] {ts}  {price:.3f}")
+
+        if DEBUG:
+            end = time.perf_counter()   # ← 計測終了
+            print(f"[task1] 計算時間: {(end - start)*1000:.3f} ms")
+
         time.sleep(sleep_sec)
 
 # === タスク2:インジケータ（分が切り替わったらだけ更新） ===
-def run_ma_task(mas: dict[int, MovingAverage], poll_sec=0.1):
+def run_ma_task(mas: dict[int, MovingAverage], poll_sec=1):
     global latest_price, latest_ma_snap
     last_min = None
     while True:
+        if DEBUG:
+            start = time.perf_counter()   # ← 計測開始
+
         with lock:
             data = latest_price
         if data is None:
@@ -50,12 +63,19 @@ def run_ma_task(mas: dict[int, MovingAverage], poll_sec=0.1):
                 parts.append(f"MA({w})={v:.3f}" if v is not None else f"MA({w})=nan")
             # print(f"[移動平均] {ts}  " + "  ".join(parts))
             last_min = cur_min
+
+        if DEBUG:
+            end = time.perf_counter()   # ← 計測終了
+            print(f"[task2] 計算時間: {(end - start)*1000:.3f} ms")
         time.sleep(poll_sec)
 
 # === タスク3: 売買シグナル判定（最新スナップショットで随時） ===
 def run_strategy_task(strategy: Strategy, sleep_sec=1):
     global latest_price, latest_ma_snap, latest_signal
     while True:
+        if DEBUG:
+            start = time.perf_counter()   # ← 計測開始
+
         with lock:
             px = latest_price
             ma_snap = latest_ma_snap
@@ -77,12 +97,19 @@ def run_strategy_task(strategy: Strategy, sleep_sec=1):
         #     f"MA25={fmt(ma_dict.get(25))}  MA75={fmt(ma_dict.get(75))}  MA200={fmt(ma_dict.get(200))}  "
         #     f"→ Signal={res['signal']}"
         # )
+
+        if DEBUG:
+            end = time.perf_counter()   # ← 計測終了
+            print(f"[task3] 計算時間: {(end - start)*1000:.3f} ms")
         time.sleep(sleep_sec)
         
 # === タスク4: 表示タスク ===
-def run_view_task(sleep_sec=3):
+def run_view_task(sleep_sec=1):
     global latest_price, latest_ma_snap, latest_signal
     while True:
+        if DEBUG:
+            start = time.perf_counter()   # ← 計測開始
+
         with lock:
             px = latest_price
             ma_snap = latest_ma_snap
@@ -93,10 +120,26 @@ def run_view_task(sleep_sec=3):
         ts_ma, _, ma_dict = ma_snap  # ma_snap = (ts, price, {w:ma})
         date_part = ts_px.strftime("%Y-%m-%d")
         time_part = ts_px.strftime("%H:%M:%S")
+        nowprice = Decimal(str(price)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma25 = Decimal(str(ma_dict.get(25))).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma75 = Decimal(str(ma_dict.get(75))).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma200 = Decimal(str(ma_dict.get(200))).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
         print("-----------------------------------------------------------")
         print("date:",date_part,"time:",time_part)
-        print("now price:",price)
-        print("price ma 25:",ma_dict.get(25)," 75:",ma_dict.get(75)," 200:",ma_dict.get(200))
+        print("now price   :",nowprice)
+        print("ma 25       :",ma25)
+        print("ma 75       :",ma75)
+        print("ma 200      :",ma200)
+        print()
+        print()
+        print()
+        print()
+        print()
+        print()
+
+        if DEBUG:
+            end = time.perf_counter()   # ← 計測終了
+            print(f"[task4] 計算時間: {(end - start)*1000:.3f} ms")
         time.sleep(sleep_sec)
 
 def main():
