@@ -182,8 +182,8 @@ class Strategy:
                     ret1.end_time_stamp = time
         if ret1.hold != 0:# 保有している時
             if ret1.holdjudge == 1:# 買いポジの時
-                cutLossRate = ret1.sum * 0.02
-                if (ret1.sum + cutLossRate) <= (ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum)):#利確2%で強制利確
+                cutLossRate = ret1.sum * 0.016
+                if (ret1.sum + cutLossRate) <= (ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum)):#利確〇%で強制利確
                     ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
                     ret1.hold = 0
                     ret1.calc_sum = 0
@@ -191,8 +191,8 @@ class Strategy:
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
-                cutLossRate = ret1.sum * 0.02
-                if (ret1.sum + cutLossRate) <= (ret1.sum + (ret1.calc_sum - (ret1.hold * now_price))):#利確2%で強制利確
+                cutLossRate = ret1.sum * 0.016
+                if (ret1.sum + cutLossRate) <= (ret1.sum + (ret1.calc_sum - (ret1.hold * now_price))):#利確〇%で強制利確
                     ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
                     ret1.hold = 0
                     ret1.calc_sum = 0
