@@ -115,12 +115,12 @@ def run_view_task(sleep_sec=1):
     # global latest_price, latest_ma_snap, latest_signal
     mod = 0
     while True:
-
-        if mod == 1:
-            os.system("cls")
-            mod = 0
-        else:
-            mod = 1
+        os.system("cls")
+        # if mod == 1:
+        #     os.system("cls")
+        #     mod = 0
+        # else:
+        #     mod = 1
 
         if DEBUG:
             start = time.perf_counter()   # ← 計測開始

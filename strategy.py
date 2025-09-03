@@ -15,7 +15,8 @@ class SignalResult:
     hold:int = 0 #ポジション総数(通貨単位)
     calc_sum:int = 0 #ポジション総数(計算結果=レート*通貨単位)
     holdjudge:int = 0 #(0:no/1:buy/2:sell)
-    end_time_stamp = ""
+    end_time_stamp:str = ""
+
 #受け渡し展開用変数
 price = None
 ma25 = None
@@ -179,7 +180,25 @@ class Strategy:
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
-            
+        if ret1.hold != 0:# 保有している時
+            if ret1.holdjudge == 1:# 買いポジの時
+                cutLossRate = ret1.sum * 0.02
+                if (ret1.sum + cutLossRate) <= (ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum)):#利確2%で強制利確
+                    ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    ret1.hold = 0
+                    ret1.calc_sum = 0
+
+                    ret1.holdjudge = 0
+                    ret1.end_time_stamp = time
+            if ret1.holdjudge == 2:# 売りポジの時
+                cutLossRate = ret1.sum * 0.02
+                if (ret1.sum + cutLossRate) <= (ret1.sum + (ret1.calc_sum - (ret1.hold * now_price))):#利確2%で強制利確
+                    ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    ret1.hold = 0
+                    ret1.calc_sum = 0
+
+                    ret1.holdjudge = 0
+                    ret1.end_time_stamp = time
 
         #想定外の決済条件（基本的に損切想定）
         if ret1.hold != 0:# 保有している時
