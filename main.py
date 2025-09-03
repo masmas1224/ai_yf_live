@@ -90,9 +90,10 @@ def run_strategy_task(strategy: Strategy, sleep_sec=1):
 
         ts_px, price = px
         ts_ma, _, ma_dict, bb_vals, rsi_val = ma_snap   # ma_snap = (ts, price, {w:ma})
+        datetime = ts_px.strftime("%Y-%m-%d %H:%M:%S")
 
         # ここでは“分確定のMAに対して”現時点の価格で判定
-        res = strategy.generate(price, ma_dict)
+        res = strategy.generate(price,datetime, ma_dict, bb_vals, rsi_val)
 
         with lock:
             latest_signal = res
@@ -110,10 +111,17 @@ def run_strategy_task(strategy: Strategy, sleep_sec=1):
         time.sleep(sleep_sec)
         
 # === タスク4: 表示タスク ===
-def run_view_task(sleep_sec=3):
-    global latest_price, latest_ma_snap, latest_signal
+def run_view_task(sleep_sec=1):
+    # global latest_price, latest_ma_snap, latest_signal
+    mod = 0
     while True:
-        os.system("cls")
+
+        if mod == 1:
+            os.system("cls")
+            mod = 0
+        else:
+            mod = 1
+
         if DEBUG:
             start = time.perf_counter()   # ← 計測開始
 
@@ -155,7 +163,13 @@ def run_view_task(sleep_sec=3):
         print()
         print()
         print()
-        print()
+        print("-----------------------------------------------------------")
+        print("\033[32mresult      :",latest_signal["ret"][0],"\033[0m")
+        print("\033[32m            :",latest_signal["ret"][1],"\033[0m")
+        print("\033[32m            :",latest_signal["ret"][2],"\033[0m")
+        print("\033[32m            :",latest_signal["ret"][3],"\033[0m")
+        print("\033[32m            :",latest_signal["ret"][4],"\033[0m")
+        print("\033[32m            :",latest_signal["ret"][5],"\033[0m")
 
         if DEBUG:
             end = time.perf_counter()   # ← 計測終了
@@ -180,6 +194,11 @@ def main():
     rsi.init_prices(initial_prices)
 
     strategy = Strategy()
+    STATE_PATH = "strategy_state.json"
+    if strategy.import_state(STATE_PATH):
+        print(f"[INFO] 前回状態を復元しました: {STATE_PATH}")
+    else:
+        print(f"[INFO] 前回状態ファイルなし（新規開始）: {STATE_PATH}")
 
     t1 = threading.Thread(target=run_price_task,   args=(fetcher,), daemon=True)
     t2 = threading.Thread(target=run_ma_task,      args=(mas,bb,rsi),     daemon=True)
@@ -195,7 +214,12 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n[INFO] 手動停止しました🦴")
+        # 停止前に状態を保存
+        try:
+            strategy.export_state(STATE_PATH)
+            print(f"\n[INFO] 状態を保存しました: {STATE_PATH} ")
+        finally:
+           print("\n[INFO] 手動停止しました")
 
 if __name__ == "__main__":
     main()
