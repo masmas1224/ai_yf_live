@@ -1,5 +1,6 @@
 import threading
 import time
+import os
 from datetime import datetime
 from fetcher import PriceFetcher
 from average import MovingAverage
@@ -109,9 +110,10 @@ def run_strategy_task(strategy: Strategy, sleep_sec=1):
         time.sleep(sleep_sec)
         
 # === タスク4: 表示タスク ===
-def run_view_task(sleep_sec=1):
+def run_view_task(sleep_sec=3):
     global latest_price, latest_ma_snap, latest_signal
     while True:
+        os.system("cls")
         if DEBUG:
             start = time.perf_counter()   # ← 計測開始
 
@@ -137,19 +139,19 @@ def run_view_task(sleep_sec=1):
         rsi = Decimal(str(rsi_val)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
         print("-----------------------------------------------------------")
         print("date:",date_part,"time:",time_part)
-        print("now price   :",nowprice)
+        print("\033[31mnow price   :",nowprice,"\033[0m")
 
-        print("ma 25       :",ma25)
-        print("ma 75       :",ma75)
-        print("ma 200      :",ma200)
+        print("\033[33mma 25       :",ma25,"\033[0m")
+        print("\033[33mma 75       :",ma75,"\033[0m")
+        print("\033[33mma 200      :",ma200,"\033[0m")
 
-        print("bb +2σ      :",bb_upper_2)
-        print("bb +1σ      :",bb_upper_1)
-        print("bb mid      :",mid)
-        print("bb -1σ      :",bb_lower_1)
-        print("bb -2σ      :",bb_lower_2)
+        print("\033[32mbb +2σ      :",bb_upper_2,"\033[0m")
+        print("\033[32mbb +1σ      :",bb_upper_1,"\033[0m")
+        print("\033[32mbb mid      :",mid,"\033[0m")
+        print("\033[32mbb -1σ      :",bb_lower_1,"\033[0m")
+        print("\033[32mbb -2σ      :",bb_lower_2,"\033[0m")
 
-        print("rsi         :",rsi)
+        print("\033[34mrsi         :",rsi,"\033[0m")
         print()
         print()
         print()
