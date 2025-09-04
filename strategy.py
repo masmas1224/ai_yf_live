@@ -29,6 +29,9 @@ bb_mid = None
 bb_dn1 = None
 bb_dn2 = None
 
+ma200p_Profit = None
+ma200m_Profit = None
+
 rsi_old = None
 ret1 = SignalResult()
 ret2 = SignalResult()
@@ -296,20 +299,23 @@ class Strategy:
         ONE = float('1')
         ma200p = Decimal(ma200 * float(ONE + ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
         ma200m = Decimal(ma200 * float(ONE - ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+
+        
         #START
         if ret2.hold == 0:
             if ma200p <= price:
                 ret2.hold += 30000
                 ret2.calc_sum += (ret2.hold * price)
-
                 ret2.holdjudge = 1
                 ret2.end_time_stamp = time
+                ma200p_Profit = ma200p + ((ma200p - ma200)*1.2)
             if ma200m >= price:
                 ret2.hold += 30000
                 ret2.calc_sum += (ret2.hold * price)
 
                 ret2.holdjudge = 2
                 ret2.end_time_stamp = time
+                ma200m_Profit = ma200m + ((ma200m - ma200)*1.2)
 
         #EXSIT
         #想定外の決済条件（基本的に損切想定）
@@ -344,6 +350,7 @@ class Strategy:
 
                     ret2.holdjudge = 0
                     ret2.end_time_stamp = time
+
         if ret2.hold != 0:# 保有している時
             if ret2.holdjudge == 1:# 買いポジの時
                 cutLossRate = ret2.sum * 0.016
@@ -375,36 +382,63 @@ class Strategy:
 
                     ret2.holdjudge = 0
                     ret2.end_time_stamp = time
-        if ret2.end_time_stamp != time:
-            if ret2.hold != 0:# 保有している時
-                if ret2.holdjudge == 1:# 買いポジの時
-                    if price <= ma200:
-                        ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
-                        if ProfitAndLoss > 0:
-                            ret2.win += 1
-                        elif ProfitAndLoss < 0:
-                            ret2.los += 1
-                        ret2.cnt += 1
-                        ret2.sum = ret2.sum + ProfitAndLoss
-                        ret2.hold = 0
-                        ret2.calc_sum = 0.0
+            if ret2.holdjudge == 1:# 買いポジの時
+                if ma200p_Profit <= now_price:
+                    ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
 
-                        ret2.holdjudge = 0
-                        ret2.end_time_stamp = time
-                if ret2.holdjudge == 2:# 売りポジの時
-                    if price >= ma200:
-                        ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
-                        if ProfitAndLoss > 0:
-                            ret2.win += 1
-                        elif ProfitAndLoss < 0:
-                            ret2.los += 1
-                        ret2.cnt += 1
-                        ret2.sum = ret2.sum + ProfitAndLoss
-                        ret2.hold = 0
-                        ret2.calc_sum = 0.0
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+            if ret2.holdjudge == 2:# 売りポジの時
+                if ma200m_Profit >= now_price:
+                    ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
 
-                        ret2.holdjudge = 0
-                        ret2.end_time_stamp = time
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+        if ret2.hold != 0:# 保有している時
+            if ret2.holdjudge == 1:# 買いポジの時
+                if price <= ma200:
+                    ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+            if ret2.holdjudge == 2:# 売りポジの時
+                if price >= ma200:
+                    ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
         #戦術3
         #戦術4
         #戦術5
