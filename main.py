@@ -153,6 +153,14 @@ def run_view_task(sleep_sec=1):
         print("\033[33mma 75       :",ma75,"\033[0m")
         print("\033[33mma 200      :",ma200,"\033[0m")
 
+        ma200late = Decimal('0.0005')
+        ONE = Decimal('1')
+        ma200p = Decimal(ma200 * Decimal(ONE + ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma200m = Decimal(ma200 * Decimal(ONE - ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        print("\033[33mspl ma 200 +:",ma200p,"\033[0m")
+        print("\033[33mspl ma 200  :",ma200,"\033[0m")
+        print("\033[33mspl ma 200 -:",ma200m,"\033[0m")
+
         print("\033[32mbb +2σ      :",bb_upper_2,"\033[0m")
         print("\033[32mbb +1σ      :",bb_upper_1,"\033[0m")
         print("\033[32mbb mid      :",mid,"\033[0m")

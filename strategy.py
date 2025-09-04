@@ -13,7 +13,7 @@ class SignalResult:
     cnt:int = 0 #トレード回数
     sum:float  = 500000.0#総資産
     hold:int = 0 #ポジション総数(通貨単位)
-    calc_sum:int = 0 #ポジション総数(計算結果=レート*通貨単位)
+    calc_sum:float = 0.0 #ポジション総数(計算結果=レート*通貨単位)
     holdjudge:int = 0 #(0:no/1:buy/2:sell)
     end_time_stamp:str = ""
 
@@ -115,7 +115,7 @@ class Strategy:
         bb_mid = self.to_decimal(bb_vals['mid'])
         bb_dn1 = self.to_decimal(bb_vals['lower_1'])
         bb_dn2 = self.to_decimal(bb_vals['lower_2'])
-        if rsi_old == None:
+        if rsi_old is None:
             rsi_old = rsi
 
         #戦術1
@@ -166,17 +166,29 @@ class Strategy:
         if ret1.hold != 0:# 保有している時
             if ret1.holdjudge == 1:# 買いポジの時
                 if rsi >= 75:
-                    ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
                 if rsi <= 25:
-                    ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
@@ -184,18 +196,30 @@ class Strategy:
             if ret1.holdjudge == 1:# 買いポジの時
                 cutLossRate = ret1.sum * 0.016
                 if (ret1.sum + cutLossRate) <= (ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum)):#利確〇%で強制利確
-                    ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
                 cutLossRate = ret1.sum * 0.016
                 if (ret1.sum + cutLossRate) <= (ret1.sum + (ret1.calc_sum - (ret1.hold * now_price))):#利確〇%で強制利確
-                    ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
@@ -205,18 +229,30 @@ class Strategy:
             if ret1.holdjudge == 1:# 買いポジの時
                 cutLossRate = ret1.sum * 0.013
                 if (ret1.sum - cutLossRate) >= (ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum)):#損切りラインを下回ったら
-                    ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
                 cutLossRate = ret1.sum * 0.013
                 if (ret1.sum - cutLossRate) >= (ret1.sum + (ret1.calc_sum - (ret1.hold * now_price))):#損切りラインを下回ったら
-                    ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret1.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret1.los += 1
+                    ret1.cnt += 1
+                    ret1.sum = ret1.sum + ProfitAndLoss
                     ret1.hold = 0
-                    ret1.calc_sum = 0
+                    ret1.calc_sum = 0.0
 
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
@@ -226,9 +262,15 @@ class Strategy:
                 if rsi_old < 20:
                     if rsi >= 20:
                         if ret1.hold == 70000:# 4回目の買い入れの時
-                            ret1.sum = ret1.sum + ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                            ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
+                            if ProfitAndLoss > 0:
+                                ret1.win += 1
+                            elif ProfitAndLoss < 0:
+                                ret1.los += 1
+                            ret1.cnt += 1
+                            ret1.sum = ret1.sum + ProfitAndLoss
                             ret1.hold = 0
-                            ret1.calc_sum = 0
+                            ret1.calc_sum = 0.0
 
                             ret1.holdjudge = 0
                             ret1.end_time_stamp = time
@@ -236,14 +278,133 @@ class Strategy:
                 if rsi_old > 80:
                     if rsi <= 80:
                         if ret1.hold == 70000:# 4回目の売り入れの時
-                            ret1.sum = ret1.sum + (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                            ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
+                            if ProfitAndLoss > 0:
+                                ret1.win += 1
+                            elif ProfitAndLoss < 0:
+                                ret1.los += 1
+                            ret1.cnt += 1
+                            ret1.sum = ret1.sum + ProfitAndLoss
                             ret1.hold = 0
-                            ret1.calc_sum = 0
+                            ret1.calc_sum = 0.0
 
                             ret1.holdjudge = 0
                             ret1.end_time_stamp = time
 
         #戦術2
+        ma200late = float('0.0005')
+        ONE = float('1')
+        ma200p = Decimal(ma200 * float(ONE + ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma200m = Decimal(ma200 * float(ONE - ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        #START
+        if ret2.hold == 0:
+            if ma200p <= price:
+                ret2.hold += 30000
+                ret2.calc_sum += (ret2.hold * price)
+
+                ret2.holdjudge = 1
+                ret2.end_time_stamp = time
+            if ma200m >= price:
+                ret2.hold += 30000
+                ret2.calc_sum += (ret2.hold * price)
+
+                ret2.holdjudge = 2
+                ret2.end_time_stamp = time
+
+        #EXSIT
+        #想定外の決済条件（基本的に損切想定）
+        if ret2.hold != 0:# 保有している時
+            if ret2.holdjudge == 1:# 買いポジの時
+                cutLossRate = ret2.sum * 0.013
+                if (ret2.sum - cutLossRate) >= (ret2.sum + ((ret2.hold * now_price) - ret2.calc_sum)):#損切りラインを下回ったら
+                    ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+            if ret2.holdjudge == 2:# 売りポジの時
+                cutLossRate = ret2.sum * 0.013
+                if (ret2.sum - cutLossRate) >= (ret2.sum + (ret2.calc_sum - (ret2.hold * now_price))):#損切りラインを下回ったら
+                    ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+        if ret2.hold != 0:# 保有している時
+            if ret2.holdjudge == 1:# 買いポジの時
+                cutLossRate = ret2.sum * 0.016
+                if (ret2.sum + cutLossRate) <= (ret2.sum + ((ret2.hold * now_price) - ret2.calc_sum)):#利確〇%で強制利確
+                    ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+            if ret2.holdjudge == 2:# 売りポジの時
+                cutLossRate = ret2.sum * 0.016
+                if (ret2.sum + cutLossRate) <= (ret2.sum + (ret2.calc_sum - (ret2.hold * now_price))):#利確〇%で強制利確
+                    ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
+                    if ProfitAndLoss > 0:
+                        ret2.win += 1
+                    elif ProfitAndLoss < 0:
+                        ret2.los += 1
+                    ret2.cnt += 1
+                    ret2.sum = ret2.sum + ProfitAndLoss
+                    ret2.hold = 0
+                    ret2.calc_sum = 0.0
+
+                    ret2.holdjudge = 0
+                    ret2.end_time_stamp = time
+        if ret2.end_time_stamp != time:
+            if ret2.hold != 0:# 保有している時
+                if ret2.holdjudge == 1:# 買いポジの時
+                    if price <= ma200:
+                        ProfitAndLoss = ((ret2.hold * now_price) - ret2.calc_sum) #保有総数 - 現在価値
+                        if ProfitAndLoss > 0:
+                            ret2.win += 1
+                        elif ProfitAndLoss < 0:
+                            ret2.los += 1
+                        ret2.cnt += 1
+                        ret2.sum = ret2.sum + ProfitAndLoss
+                        ret2.hold = 0
+                        ret2.calc_sum = 0.0
+
+                        ret2.holdjudge = 0
+                        ret2.end_time_stamp = time
+                if ret2.holdjudge == 2:# 売りポジの時
+                    if price >= ma200:
+                        ProfitAndLoss = (ret2.calc_sum - (ret2.hold * now_price)) #現在価値 - 保有総数
+                        if ProfitAndLoss > 0:
+                            ret2.win += 1
+                        elif ProfitAndLoss < 0:
+                            ret2.los += 1
+                        ret2.cnt += 1
+                        ret2.sum = ret2.sum + ProfitAndLoss
+                        ret2.hold = 0
+                        ret2.calc_sum = 0.0
+
+                        ret2.holdjudge = 0
+                        ret2.end_time_stamp = time
         #戦術3
         #戦術4
         #戦術5
