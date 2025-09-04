@@ -123,8 +123,8 @@ class Strategy:
         #戦術1
         #START
         if ret1.end_time_stamp != time:
-            if rsi_old < 20:
-                if rsi >= 20:
+            if rsi_old < 28:
+                if rsi >= 28:
                     if ret1.hold == 0:
                         ret1.hold = 10000
                         ret1.calc_sum += (ret1.hold * price)
@@ -143,8 +143,8 @@ class Strategy:
 
                         ret1.holdjudge = 1
                         ret1.end_time_stamp = time
-            if rsi_old > 80:
-                if rsi <= 80:
+            if rsi_old > 72:
+                if rsi <= 72:
                     if ret1.hold == 0:
                         ret1.hold = 10000
                         ret1.calc_sum += (ret1.hold * price)
@@ -167,7 +167,7 @@ class Strategy:
         #決済条件
         if ret1.hold != 0:# 保有している時
             if ret1.holdjudge == 1:# 買いポジの時
-                if rsi >= 75:
+                if rsi >= 72:
                     ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
                     if ProfitAndLoss > 0:
                         ret1.win += 1
@@ -181,7 +181,7 @@ class Strategy:
                     ret1.holdjudge = 0
                     ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
-                if rsi <= 25:
+                if rsi <= 28:
                     ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
                     if ProfitAndLoss > 0:
                         ret1.win += 1
@@ -261,8 +261,8 @@ class Strategy:
 
         if ret1.end_time_stamp != time:
             if ret1.holdjudge == 1:# 買いポジの時
-                if rsi_old < 20:
-                    if rsi >= 20:
+                if rsi_old < 28:
+                    if rsi >= 28:
                         if ret1.hold == 70000:# 4回目の買い入れの時
                             ProfitAndLoss = ((ret1.hold * now_price) - ret1.calc_sum) #保有総数 - 現在価値
                             if ProfitAndLoss > 0:
@@ -277,8 +277,8 @@ class Strategy:
                             ret1.holdjudge = 0
                             ret1.end_time_stamp = time
             if ret1.holdjudge == 2:# 売りポジの時
-                if rsi_old > 80:
-                    if rsi <= 80:
+                if rsi_old > 72:
+                    if rsi <= 72:
                         if ret1.hold == 70000:# 4回目の売り入れの時
                             ProfitAndLoss = (ret1.calc_sum - (ret1.hold * now_price)) #現在価値 - 保有総数
                             if ProfitAndLoss > 0:
