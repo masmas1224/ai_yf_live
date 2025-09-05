@@ -296,8 +296,8 @@ class Strategy:
         #戦術2
         ma200late = float('0.0005')
         ONE = float('1')
-        ma200p = Decimal(ma200 * float(ONE + ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
-        ma200m = Decimal(ma200 * float(ONE - ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN)
+        ma200p = float(Decimal(ma200 * float(ONE + ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN))
+        ma200m = float(Decimal(ma200 * float(ONE - ma200late)).quantize(Decimal("0.000"), rounding=ROUND_DOWN))
         
         #START
         if ret2.hold == 0:
