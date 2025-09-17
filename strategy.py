@@ -11,7 +11,7 @@ class SignalResult:
     win:int = 0 #勝ち回数
     los:int = 0 #負け回数
     cnt:int = 0 #トレード回数
-    sum:float  = 500000.0#総資産
+    sum:float  = 1000000.0#総資産
     hold:int = 0 #ポジション総数(通貨単位)
     calc_sum:float = 0.0 #ポジション総数(計算結果=レート*通貨単位)
     holdjudge:int = 0 #(0:no/1:buy/2:sell)
